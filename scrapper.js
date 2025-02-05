@@ -9,7 +9,11 @@ const chatId = '-1002269248013';
 const bot = new TelegramBot(telegramToken, { polling: true });
 
 (async () => {
-    const browser = await puppeteer.launch({ headless: false, args: ['--start-maximized'] });
+    const browser = await puppeteer.launch({
+        headless: true,
+        executablePath: '/usr/bin/chromium-browser', // <-- Добавляем путь к Chromium
+        args: ['--no-sandbox', '--disable-setuid-sandbox']
+    });
     const page = await browser.newPage();
 
     await page.setViewport({ width: 1920, height: 1080 });
