@@ -145,6 +145,7 @@ async function startScraper() {
 
 function restartScript() {
     console.log("Скрипт будет перезапущен через 10 секунд...");
+    bot.sendMessage(chatId, "У меня лапки, я перезапускаюсь");
     setTimeout(() => process.exit(1), 10000);
 }
 
