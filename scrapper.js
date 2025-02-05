@@ -79,7 +79,7 @@ const bot = new TelegramBot(telegramToken, { polling: true });
         console.log("Изменилось ли значение?", isChanged);
         await page.click('a[href="/income/"]');
 
-        if (!isChanged) {
+        if (isChanged) {
             temp = newData;
             getDeposit();
         }
