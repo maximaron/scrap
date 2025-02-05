@@ -11,7 +11,7 @@ const bot = new TelegramBot(telegramToken, { polling: true });
 (async () => {
     const browser = await puppeteer.launch({
         headless: true,
-        executablePath: '/usr/bin/chromium-browser',
+        // executablePath: '/usr/bin/chromium-browser',
         args: ['--no-sandbox', '--disable-setuid-sandbox']
     });
     const page = await browser.newPage();
@@ -79,7 +79,7 @@ const bot = new TelegramBot(telegramToken, { polling: true });
         console.log("Изменилось ли значение?", isChanged);
         await page.click('a[href="/income/"]');
 
-        if (isChanged) {
+        if (!isChanged) {
             temp = newData;
             getDeposit();
         }
@@ -108,9 +108,13 @@ const bot = new TelegramBot(telegramToken, { polling: true });
 
         // Шаг 2: Извлекаем данные из первого p в additional-details (обновленный селектор)
         const secondStep = await page.evaluate(() => {
-            const secondDiv = document.querySelector('#main-container > div > div:nth-child(5) > div.additional-details > div > div:nth-child(1) > p.mb-0.para-1');
+            let secondDiv = document.querySelector('#main-container > div > div:nth-child(5) > div.additional-details > div > div:nth-child(1) > p.mb-0.para-1');
+            if (!secondDiv) {
+                secondDiv = document.querySelector('#main-container > div > div:nth-child(6) > div.additional-details > div > div:nth-child(1) > p.mb-0.para-1');
+            }
             return secondDiv ? secondDiv.textContent.trim() : null;
         });
+
         if (secondStep) {
             allData.push(`SP name: ${secondStep}`);
         } else {
@@ -119,20 +123,38 @@ const bot = new TelegramBot(telegramToken, { polling: true });
 
         // Шаг 3: Извлекаем данные из второго p в additional-details (обновленный селектор)
         const thirdStep = await page.evaluate(() => {
-            const thirdDiv = document.querySelector('#main-container > div > div:nth-child(5) > div.additional-details > div > div:nth-child(2) > p.mb-0.para-1');
+            let thirdDiv = document.querySelector('#main-container > div > div:nth-child(5) > div.additional-details > div > div:nth-child(2) > p.mb-0.para-1');
+
+            // Если не нашли, ищем в другом месте
+            if (!thirdDiv) {
+                thirdDiv = document.querySelector('#main-container > div > div:nth-child(6) > div.additional-details > div > div:nth-child(2) > p.mb-0.para-1');
+            }
+
+            // Возвращаем найденный текст или null
             return thirdDiv ? thirdDiv.textContent.trim() : null;
         });
+
         if (thirdStep) {
             allData.push(`intention: ${thirdStep}`);
         } else {
             allData.push('Шаг 3: Не удалось извлечь данные');
         }
 
+
         // Шаг 4: Извлекаем данные из третьего p в additional-details (обновленный селектор)
         const fourthStep = await page.evaluate(() => {
-            const fourthDiv = document.querySelector('#main-container > div > div:nth-child(5) > div.additional-details > div > div:nth-child(3) > p.mb-0.para-1');
+            // Пытаемся найти данные в первом месте
+            let fourthDiv = document.querySelector('#main-container > div > div:nth-child(5) > div.additional-details > div > div:nth-child(3) > p.mb-0.para-1');
+
+            // Если не нашли, ищем в другом месте
+            if (!fourthDiv) {
+                fourthDiv = document.querySelector('#main-container > div > div:nth-child(6) > div.additional-details > div > div:nth-child(3) > p.mb-0.para-1');
+            }
+
+            // Возвращаем найденный текст или null
             return fourthDiv ? fourthDiv.textContent.trim() : null;
         });
+
         if (fourthStep) {
             allData.push(`Username: ${fourthStep}`);
         } else {
