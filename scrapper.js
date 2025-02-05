@@ -11,7 +11,7 @@ const bot = new TelegramBot(telegramToken, { polling: true });
 (async () => {
     const browser = await puppeteer.launch({
         headless: true,
-        executablePath: '/usr/bin/chromium-browser', // <-- Добавляем путь к Chromium
+        executablePath: '/usr/bin/chromium-browser',
         args: ['--no-sandbox', '--disable-setuid-sandbox']
     });
     const page = await browser.newPage();
@@ -106,9 +106,9 @@ const bot = new TelegramBot(telegramToken, { polling: true });
             allData.push('Spell: Не удалось извлечь данные');
         }
 
-        // Шаг 2: Извлекаем данные из первого p в additional-details
+        // Шаг 2: Извлекаем данные из первого p в additional-details (обновленный селектор)
         const secondStep = await page.evaluate(() => {
-            const secondDiv = document.querySelector('#main-container > div > div:nth-child(6) > div.additional-details > div > div:nth-child(1) > p');
+            const secondDiv = document.querySelector('#main-container > div > div:nth-child(5) > div.additional-details > div > div:nth-child(1) > p.mb-0.para-1');
             return secondDiv ? secondDiv.textContent.trim() : null;
         });
         if (secondStep) {
@@ -117,9 +117,9 @@ const bot = new TelegramBot(telegramToken, { polling: true });
             allData.push('Шаг 2: Не удалось извлечь данные');
         }
 
-        // Шаг 3: Извлекаем данные из второго p в additional-details
+        // Шаг 3: Извлекаем данные из второго p в additional-details (обновленный селектор)
         const thirdStep = await page.evaluate(() => {
-            const thirdDiv = document.querySelector('#main-container > div > div:nth-child(6) > div.additional-details > div > div:nth-child(2) > p');
+            const thirdDiv = document.querySelector('#main-container > div > div:nth-child(5) > div.additional-details > div > div:nth-child(2) > p.mb-0.para-1');
             return thirdDiv ? thirdDiv.textContent.trim() : null;
         });
         if (thirdStep) {
@@ -128,9 +128,9 @@ const bot = new TelegramBot(telegramToken, { polling: true });
             allData.push('Шаг 3: Не удалось извлечь данные');
         }
 
-        // Шаг 4: Извлекаем данные из третьего p в additional-details
+        // Шаг 4: Извлекаем данные из третьего p в additional-details (обновленный селектор)
         const fourthStep = await page.evaluate(() => {
-            const fourthDiv = document.querySelector('#main-container > div > div:nth-child(6) > div.additional-details > div > div:nth-child(3) > p');
+            const fourthDiv = document.querySelector('#main-container > div > div:nth-child(5) > div.additional-details > div > div:nth-child(3) > p.mb-0.para-1');
             return fourthDiv ? fourthDiv.textContent.trim() : null;
         });
         if (fourthStep) {
