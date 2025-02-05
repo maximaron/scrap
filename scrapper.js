@@ -18,6 +18,14 @@ const bot = new TelegramBot(telegramToken, { polling: true });
 
     await page.setViewport({ width: 1920, height: 1080 });
 
+    // Отправляем сообщение, что бот готов к депозитам
+    bot.sendMessage(chatId, "Я готов к депозитам");
+
+    // Повторяем сообщение каждый час
+    setInterval(() => {
+        bot.sendMessage(chatId, "Я готов к депозитам");
+    }, 3600000); // 3600000 ms = 1 час
+
     // Открываем страницу и логинимся
     await page.goto('https://admin.stan.store/', { waitUntil: 'networkidle2' });
 
