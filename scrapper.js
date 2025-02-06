@@ -102,6 +102,12 @@ async function startScraper() {
                 }
 
                 await extractData(
+                    '#main-container > div > div:nth-child(4) > div.transaction-details > div:nth-child(3) > div.d-flex.align-items-start.para-1 > div.cursor-pointer',
+                    '#main-container > div > div:nth-child(5) > div.transaction-details > div:nth-child(3) > div.d-flex.align-items-start.para-1 > div.cursor-pointer',
+                    'Spell'
+                );
+
+                await extractData(
                     '#main-container > div > div:nth-child(5) > div.additional-details > div > div:nth-child(1) > p.mb-0.para-1',
                     '#main-container > div > div:nth-child(6) > div.additional-details > div > div:nth-child(1) > p.mb-0.para-1',
                     'SP name'
