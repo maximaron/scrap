@@ -1,5 +1,6 @@
 const puppeteer = require('puppeteer');
 const TelegramBot = require('node-telegram-bot-api');
+const querystring = require("node:querystring");
 
 // Telegram Bot API Token
 const telegramToken = '7932034603:AAF5vqbyU8YSFNAKf8v9XD4cmDD9Ruuw8BM';
@@ -41,14 +42,19 @@ async function startScraper() {
             try {
                 return await page.evaluate(() => {
                     const table = document.querySelector('table.para-2.overflow-visible');
-                    if (!table) return 'Таблица не найдена';
+                    if (!table) return { email: 'Таблица не найдена', spell: 'Нет данных' };
 
                     const rows = table.querySelectorAll('tr');
-                    if (rows.length < 2) return 'Во второй строке данных нет';
+                    if (rows.length < 2) return { email: 'Во второй строке данных нет', spell: 'Нет данных' };
 
                     const secondRow = rows[1];
-                    const targetTd = secondRow.querySelector('td.text-truncate');
-                    return targetTd ? targetTd.innerText.trim() : 'Ячейка не найдена';
+                    const emailTd = secondRow.querySelector('td.text-truncate');
+                    const spellSpan = secondRow.querySelector('td:nth-child(3) span.text-truncate');
+
+                    return {
+                        email: emailTd ? emailTd.innerText.trim() : 'Ячейка не найдена',
+                        spell: spellSpan ? spellSpan.innerText.trim() : 'Спелл не найден'
+                    };
                 });
             } catch (error) {
                 console.error("Ошибка при получении данных из таблицы:", error);
@@ -70,12 +76,65 @@ async function startScraper() {
                 const newData = await getTableData();
                 console.log("Новые данные:", newData);
 
-                if (newData && newData !== temp) {
-                    temp = newData;
-                    await getDeposit();
+                if (newData) {
+                    if (newData.email !== temp.email || newData.spell !== temp.spell && newData.spell !== 'Expedite Any Spell') {
+                        temp = newData;
+                        await getDeposit();
+                    } else if (newData.spell !== temp.spell && newData.spell === 'Expedite Any Spell') {
+                        await getAcceleration();
+                    }
                 }
             } catch (error) {
                 console.error("Ошибка в checkForUpdates:", error);
+                restartScript();
+            }
+        }
+
+        async function getAcceleration() {
+            try {
+                await page.click('td.text-truncate');
+                await page.waitForNavigation({ waitUntil: 'networkidle2' });
+
+                const allData = [];
+
+                async function extractData(selectors, label) {
+                    try {
+                        const data = await page.evaluate((s1, s2) => {
+                            let el = document.querySelector(s1) || document.querySelector(s2);
+                            return el ? el.textContent.trim() : null;
+                        }, ...selectors);
+
+                        allData.push(data ? `${label}: ${data}` : `${label}: Не удалось извлечь данные`);
+                    } catch (error) {
+                        console.error(`Ошибка при извлечении ${label}:`, error);
+                        allData.push(`${label}: Ошибка извлечения`);
+                    }
+                }
+
+                await extractData([
+                    '#main-container > div > div:nth-child(4) > div.transaction-details > div:nth-child(3) > div.d-flex.align-items-start.para-1 > div.cursor-pointer',
+                    ''
+                ], 'Spell');
+
+                await extractData([
+                    '#main-container > div > div:nth-child(6) > div.additional-details > div.additional-info > p',
+                    '#main-container > div > div:nth-child(5) > div.additional-details > div.additional-info > p'
+                ], 'Customer Note');
+
+                await extractData([
+                    '#main-container > div > div:nth-child(6) > div.additional-details > div.w-100.additional-detail > div:nth-child(1) > p',
+                    '#main-container > div > div:nth-child(5) > div.additional-details > div.w-100.additional-detail > div:nth-child(1) > p'
+                ], 'Spell that was purchased');
+
+                await extractData([
+                    '#main-container > div > div:nth-child(6) > div.additional-details > div.w-100.additional-detail > div:nth-child(2) > p',
+                    '#main-container > div > div:nth-child(5) > div.additional-details > div.w-100.additional-detail > div:nth-child(2) > p'
+                ], 'Username');
+
+                allData.push("УСКОРЕНИЕ ПРЕДЫДУЩЕГО КЛИЕННТА");
+                bot.sendMessage(chatId, allData.join('\n'));
+            } catch (error) {
+                console.error("Ошибка в getAcceleration:", error);
                 restartScript();
             }
         }
