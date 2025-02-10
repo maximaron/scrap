@@ -84,13 +84,17 @@ async function startScraper() {
                 const newSpell = await getSpellName();
                 console.log("Новые данные:", newData, "Новый Spell:", newSpell);
 
-                if (newData && newData !== temp) {
-                    temp = newData;
-                    await getDeposit();
-                } else if (newSpell !== lastSpell) {
-                    lastSpell = newSpell;
-                    await getAcceleration();
+                switch (true) {
+                    case (newData && newData !== temp):
+                        temp = newData;
+                        await getDeposit();
+                        break;
+                    case (newSpell !== lastSpell):
+                        lastSpell = newSpell;
+                        await getAcceleration();
+                        break;
                 }
+
             } catch (error) {
                 console.error("Ошибка в checkForUpdates:", error);
                 restartScript();
