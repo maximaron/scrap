@@ -12,7 +12,7 @@ async function startScraper() {
     try {
         const browser = await puppeteer.launch({
             headless: true,
-            executablePath: '/usr/bin/chromium-browser',
+            // executablePath: '/usr/bin/chromium-browser',
             args: ['--no-sandbox', '--disable-setuid-sandbox']
         });
         const page = await browser.newPage();
@@ -59,7 +59,7 @@ async function startScraper() {
         async function getSpellName() {
             try {
                 return await page.evaluate(() => {
-                    const spellElement = document.querySelector('#main-container > div > div.mt-4 > div.row.d-none.d-lg-block > div > div > div > div > div.table-container > table > tr:nth-child(3) > td:nth-child(3) > div > span');
+                    const spellElement = document.querySelector('#main-container > div > div.mt-4 > div.row.d-none.d-lg-block > div > div > div > div > div.table-container > table > tr:nth-child(2) > td:nth-child(3) > div > span');
                     return spellElement ? spellElement.textContent.trim() : null;
                 });
             } catch (error) {
