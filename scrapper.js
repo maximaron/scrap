@@ -56,8 +56,21 @@ async function startScraper() {
             }
         }
 
+        async function getSpellName() {
+            try {
+                return await page.evaluate(() => {
+                    const spellElement = document.querySelector('#main-container > div > div.mt-4 > div.row.d-none.d-lg-block > div > div > div > div > div.table-container > table > tr:nth-child(3) > td:nth-child(3) > div > span');
+                    return spellElement ? spellElement.textContent.trim() : null;
+                });
+            } catch (error) {
+                console.error("Ошибка при получении имени спела:", error);
+                return null;
+            }
+        }
+
         let temp = await getTableData();
-        console.log("Начальные данные:", temp);
+        let lastSpell = await getSpellName();
+        console.log("Начальные данные:", temp, "Spell:", lastSpell);
 
         async function checkForUpdates() {
             try {
@@ -68,14 +81,59 @@ async function startScraper() {
                 await page.waitForSelector('table.para-2.overflow-visible');
 
                 const newData = await getTableData();
-                console.log("Новые данные:", newData);
+                const newSpell = await getSpellName();
+                console.log("Новые данные:", newData, "Новый Spell:", newSpell);
 
                 if (newData && newData !== temp) {
                     temp = newData;
                     await getDeposit();
+                } else if (newSpell !== lastSpell) {
+                    lastSpell = newSpell;
+                    await getAcceleration();
                 }
             } catch (error) {
                 console.error("Ошибка в checkForUpdates:", error);
+                restartScript();
+            }
+        }
+
+        async function getAcceleration() {
+            try {
+                console.log("Выполняется getAcceleration...");
+
+                const allData = [];
+
+                async function extractData(selector1, selector2, label) {
+                    try {
+                        const data = await page.evaluate((s1, s2) => {
+                            let el = document.querySelector(s1) || document.querySelector(s2);
+                            return el ? el.textContent.trim() : null;
+                        }, selector1, selector2);
+
+                        allData.push(data ? `${label}: ${data}` : `${label}: Не удалось извлечь данные`);
+                    } catch (error) {
+                        console.error(`Ошибка при извлечении ${label}:`, error);
+                        allData.push(`${label}: Ошибка извлечения`);
+                    }
+                }
+
+                await extractData(
+                    '#main-container > div > div:nth-child(6) > div.additional-details > div > div:nth-child(2) > p',
+                    '#main-container > div > div:nth-child(5) > div.additional-details > div.w-100.additional-detail > div:nth-child(2) > p',
+                    'Username'
+                );
+
+                await extractData(
+                    '#main-container > div > div:nth-child(6) > div.additional-details > div > div > p',
+                    '#main-container > div > div:nth-child(6) > div.additional-details > div > div:nth-child(1) > p',
+                    'Spell that was purchased'
+                );
+
+                bot.sendMessage(chatId, allData.join('\n'));
+
+                await checkForUpdates();
+            } catch (error) {
+                console.error("Ошибка в getAcceleration:", error);
                 restartScript();
             }
         }
@@ -114,18 +172,6 @@ async function startScraper() {
                 );
 
                 await extractData(
-                    '#main-container > div > div:nth-child(5) > div.additional-details > div > div:nth-child(2) > p.mb-0.para-1',
-                    '#main-container > div > div:nth-child(6) > div.additional-details > div > div:nth-child(2) > p.mb-0.para-1',
-                    'Intention'
-                );
-
-                await extractData(
-                    '#main-container > div > div:nth-child(5) > div.additional-details > div > div:nth-child(3) > p.mb-0.para-1',
-                    '#main-container > div > div:nth-child(6) > div.additional-details > div > div:nth-child(3) > p.mb-0.para-1',
-                    'Username'
-                );
-
-                await extractData(
                     '#main-container > div > div:nth-child(3) > div.transaction-details > div.d-flex.flex-grow-1.transaction-details-amount > div.cell.pl-0.flex-grow-1.net-revenue > div.para-1.text-bold',
                     '',
                     'Price'
@@ -141,7 +187,6 @@ async function startScraper() {
             }
         }
 
-        await page.click('a[href="/income/"]');
         setInterval(checkForUpdates, 10000);
     } catch (error) {
         console.error("Глобальная ошибка в скрипте:", error);
@@ -150,8 +195,8 @@ async function startScraper() {
 }
 
 function restartScript() {
-    console.log("Скрипт будет перезапущен через 10 секунд...");
-    bot.sendMessage(chatId, "У меня лапки, я перезапускаюсь");
+    console.log("Скрипт будет перезапущен...");
+    bot.sendMessage(chatId, "Перезапуск...");
     setTimeout(() => process.exit(1), 10000);
 }
 
