@@ -133,9 +133,14 @@ async function startScraper() {
 
                 allData.push("УСКОРЕНИЕ ПРЕДЫДУЩЕГО КЛИЕННТА");
                 bot.sendMessage(chatId, allData.join('\n'));
+
+                await page.click('a[href="/income/"]');
+                await page.waitForSelector('table.para-2.overflow-visible', { visible: true });
             } catch (error) {
                 console.error("Ошибка в getAcceleration:", error);
                 restartScript();
+            } finally {
+                await checkForUpdates();
             }
         }
 
@@ -197,6 +202,8 @@ async function startScraper() {
             } catch (error) {
                 console.error("Ошибка в getDeposit:", error);
                 restartScript();
+            } finally {
+                await checkForUpdates();
             }
         }
 
@@ -211,7 +218,8 @@ async function startScraper() {
 function restartScript() {
     console.log("Скрипт будет перезапущен через 10 секунд...");
     bot.sendMessage(chatId, "У меня лапки, я перезапускаюсь");
-    setTimeout(() => process.exit(1), 10000);
+    setTimeout(() => startScraper(), 10000);
+
 }
 
 startScraper();
