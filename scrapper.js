@@ -1,3 +1,4 @@
+require('dotenv').config();
 const puppeteer = require('puppeteer');
 const TelegramBot = require('node-telegram-bot-api');
 
@@ -12,7 +13,7 @@ async function startScraper() {
     try {
         const browser = await puppeteer.launch({
             headless: true,
-            executablePath: '/usr/bin/chromium-browser',
+            // executablePath: '/usr/bin/chromium-browser',
             args: ['--no-sandbox', '--disable-setuid-sandbox']
         });
         const page = await browser.newPage();
@@ -24,8 +25,8 @@ async function startScraper() {
         await page.goto('https://admin.stan.store/', { waitUntil: 'networkidle2' });
 
         await page.waitForSelector('input[placeholder="Email or Username"]');
-        await page.type('input[placeholder="Email or Username"]', 'newhoraryastrol@outlook.com');
-        await page.type('input[placeholder="Password"]', 'Olmo12345!');
+        await page.type('input[placeholder="Email or Username"]', process.env.EMAIL);
+        await page.type('input[placeholder="Password"]', process.env.PASSWORD);
 
         await Promise.all([
             page.click('button[name="login-submit-button"]'),
