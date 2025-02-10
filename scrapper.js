@@ -3,8 +3,8 @@ const puppeteer = require('puppeteer');
 const TelegramBot = require('node-telegram-bot-api');
 
 // Telegram Bot API Token
-const telegramToken = '7932034603:AAF5vqbyU8YSFNAKf8v9XD4cmDD9Ruuw8BM';
-const chatId = '-1002269248013';
+const telegramToken = process.env.TELEGRAM_TOKEN;
+const chatId = process.env.CHAT_ID;
 
 // Инициализация Telegram бота
 const bot = new TelegramBot(telegramToken, { polling: true });
