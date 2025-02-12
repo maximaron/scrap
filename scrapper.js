@@ -90,7 +90,7 @@ async function startScraper() {
                         temp = newData;
                         await getDeposit();
                         break;
-                    case (newSpell !== lastSpell):
+                    case (newSpell !== lastSpell && newSpell === "Expedite Any Spell"):
                         lastSpell = newSpell;
                         await getAcceleration();
                         break;
@@ -180,6 +180,12 @@ async function startScraper() {
                     '#main-container > div > div:nth-child(3) > div.transaction-details > div.d-flex.flex-grow-1.transaction-details-amount > div.cell.pl-0.flex-grow-1.net-revenue > div.para-1.text-bold',
                     '',
                     'Price'
+                );
+
+                await extractData(
+                    '#main-container > div > div:nth-child(5) > div.additional-details > div > div:nth-child(3) > p.mb-0.para-1',
+                    '#main-container > div > div:nth-child(6) > div.additional-details > div.w-100.additional-detail > div:nth-child(3) > p.mb-0.para-1',
+                    'Username'
                 );
 
                 bot.sendMessage(chatId, allData.join('\n'));
